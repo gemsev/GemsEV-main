@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/ev-community run build",
   "outputDirectory": "artifacts/ev-community/dist",
   "framework": "vite",
@@ -19,4 +20,3 @@
     }
   ]
 }
-
