@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "GEMS EV"
+version = "1.0.0"
+id = "artifacts/ev-community"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21681
+
+[services.development]
+run = "pnpm --filter @workspace/ev-community run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ev-community", "run", "build" ]
+publicDir = "artifacts/ev-community/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21681"
+BASE_PATH = "/"

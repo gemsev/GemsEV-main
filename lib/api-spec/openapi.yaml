@@ -1,0 +1,1510 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: EV Community Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication and registration
+  - name: owners
+    description: EV owner profiles
+  - name: blog
+    description: Blog posts
+  - name: range
+    description: EV range calculator
+  - name: cpo
+    description: Charge Point Operators
+  - name: accessories
+    description: EV accessories
+  - name: gallery
+    description: Community gallery
+  - name: faq
+    description: AI-powered FAQ
+  - name: admin
+    description: Admin operations
+  - name: dashboard
+    description: Dashboard statistics
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ─── AUTH ───────────────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      operationId: registerOwner
+      tags: [auth]
+      summary: Submit EV owner registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterOwnerBody"
+      responses:
+        "201":
+          description: Registration submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginOwner
+      tags: [auth]
+      summary: Login with credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResult"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logoutOwner
+      tags: [auth]
+      summary: Logout current user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Owner"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ─── OWNERS ─────────────────────────────────────────────────────────────────
+  /owners:
+    get:
+      operationId: listOwners
+      tags: [owners]
+      summary: List all approved EV owners
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: carModel
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Owner"
+
+  /owners/{id}:
+    get:
+      operationId: getOwner
+      tags: [owners]
+      summary: Get a specific owner's profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Owner profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Owner"
+        "404":
+          description: Owner not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /owners/{id}/profile:
+    patch:
+      operationId: updateOwnerProfile
+      tags: [owners]
+      summary: Update owner profile (self only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOwnerBody"
+      responses:
+        "200":
+          description: Updated owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Owner"
+
+  # ─── ADMIN ──────────────────────────────────────────────────────────────────
+  /admin/registrations:
+    get:
+      operationId: listRegistrations
+      tags: [admin]
+      summary: List all registrations (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+      responses:
+        "200":
+          description: List of registrations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Registration"
+
+  /admin/registrations/{id}/approve:
+    post:
+      operationId: approveRegistration
+      tags: [admin]
+      summary: Approve a registration and set login credentials
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveRegistrationBody"
+      responses:
+        "200":
+          description: Registration approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/registrations/{id}/reject:
+    post:
+      operationId: rejectRegistration
+      tags: [admin]
+      summary: Reject a registration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectRegistrationBody"
+      responses:
+        "200":
+          description: Registration rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ─── DASHBOARD ───────────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get platform statistics
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  # ─── BLOG ────────────────────────────────────────────────────────────────────
+  /blog/posts:
+    get:
+      operationId: listBlogPosts
+      tags: [blog]
+      summary: List blog posts
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: authorId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPostList"
+
+    post:
+      operationId: createBlogPost
+      tags: [blog]
+      summary: Create a new blog post (approved owners only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBlogPostBody"
+      responses:
+        "201":
+          description: Blog post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+
+  /blog/posts/{id}:
+    get:
+      operationId: getBlogPost
+      tags: [blog]
+      summary: Get a specific blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Blog post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+        "404":
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      operationId: updateBlogPost
+      tags: [blog]
+      summary: Update a blog post (author only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBlogPostBody"
+      responses:
+        "200":
+          description: Updated blog post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+
+    delete:
+      operationId: deleteBlogPost
+      tags: [blog]
+      summary: Delete a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ─── RANGE CALCULATOR ────────────────────────────────────────────────────────
+  /range/cars:
+    get:
+      operationId: getRangeCars
+      tags: [range]
+      summary: Get EV models with range specs for calculator
+      responses:
+        "200":
+          description: EV models with range data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EvRangeSpec"
+
+  /range/calculate:
+    post:
+      operationId: calculateRange
+      tags: [range]
+      summary: Calculate estimated range based on conditions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RangeCalculateBody"
+      responses:
+        "200":
+          description: Range calculation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RangeResult"
+
+  # ─── CPO ─────────────────────────────────────────────────────────────────────
+  /cpo:
+    get:
+      operationId: listCpos
+      tags: [cpo]
+      summary: List Charge Point Operators
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: network
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of CPOs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cpo"
+
+    post:
+      operationId: createCpo
+      tags: [cpo]
+      summary: Add a CPO (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCpoBody"
+      responses:
+        "201":
+          description: CPO created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cpo"
+
+  /cpo/{id}:
+    patch:
+      operationId: updateCpo
+      tags: [cpo]
+      summary: Update a CPO (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCpoBody"
+      responses:
+        "200":
+          description: CPO updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cpo"
+
+    delete:
+      operationId: deleteCpo
+      tags: [cpo]
+      summary: Delete a CPO (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: CPO deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ─── ACCESSORIES ─────────────────────────────────────────────────────────────
+  /accessories:
+    get:
+      operationId: listAccessories
+      tags: [accessories]
+      summary: List EV accessories
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: carModel
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of accessories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Accessory"
+
+    post:
+      operationId: createAccessory
+      tags: [accessories]
+      summary: Add an accessory (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccessoryBody"
+      responses:
+        "201":
+          description: Accessory created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Accessory"
+
+  /accessories/{id}:
+    patch:
+      operationId: updateAccessory
+      tags: [accessories]
+      summary: Update an accessory (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccessoryBody"
+      responses:
+        "200":
+          description: Accessory updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Accessory"
+
+    delete:
+      operationId: deleteAccessory
+      tags: [accessories]
+      summary: Delete an accessory (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Accessory deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ─── GALLERY ─────────────────────────────────────────────────────────────────
+  /gallery:
+    get:
+      operationId: listGalleryItems
+      tags: [gallery]
+      summary: List gallery photos
+      parameters:
+        - name: ownerId
+          in: query
+          schema:
+            type: integer
+        - name: carModel
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of gallery items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GalleryItem"
+
+    post:
+      operationId: createGalleryItem
+      tags: [gallery]
+      summary: Upload a gallery photo (approved owners)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGalleryItemBody"
+      responses:
+        "201":
+          description: Gallery item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryItem"
+
+  /gallery/{id}:
+    delete:
+      operationId: deleteGalleryItem
+      tags: [gallery]
+      summary: Delete a gallery item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Gallery item deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ─── FAQ / AI ─────────────────────────────────────────────────────────────────
+  /faq/questions:
+    get:
+      operationId: listFaqQuestions
+      tags: [faq]
+      summary: List common FAQ questions and answers
+      parameters:
+        - name: carModel
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of FAQ items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FaqItem"
+
+    post:
+      operationId: createFaqQuestion
+      tags: [faq]
+      summary: Add FAQ knowledge base entry (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFaqItemBody"
+      responses:
+        "201":
+          description: FAQ item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FaqItem"
+
+  /faq/ask:
+    post:
+      operationId: askFaq
+      tags: [faq]
+      summary: Ask the AI assistant a question about EVs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AskFaqBody"
+      responses:
+        "200":
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FaqAnswer"
+
+  /faq/conversations:
+    get:
+      operationId: listFaqConversations
+      tags: [faq]
+      summary: Get recent FAQ conversation history for current user
+      responses:
+        "200":
+          description: Conversation history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FaqConversation"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required: [error]
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    # ─── AUTH ─────────────────────────────────────────────────────────────────
+    RegisterOwnerBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        age:
+          type: integer
+          minimum: 16
+          maximum: 100
+        phoneNumber:
+          type: string
+        whatsappNumber:
+          type: string
+        telegramId:
+          type: string
+        areaOfStay:
+          type: string
+        occupation:
+          type: string
+        vehicleNumber:
+          type: string
+        evCarsOwned:
+          type: array
+          items:
+            type: string
+        variantColor:
+          type: string
+        otherCarModel:
+          type: string
+        purchaseMonthYear:
+          type: string
+        proofOfOwnershipUrl:
+          type: string
+      required: [email, name, age, phoneNumber, whatsappNumber, telegramId, areaOfStay, occupation, vehicleNumber, evCarsOwned, variantColor, purchaseMonthYear]
+
+    RegistrationResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        status:
+          type: string
+      required: [id, message, status]
+
+    LoginBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    LoginResult:
+      type: object
+      properties:
+        owner:
+          $ref: "#/components/schemas/Owner"
+        token:
+          type: string
+      required: [owner, token]
+
+    # ─── OWNER ───────────────────────────────────────────────────────────────
+    Owner:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        age:
+          type: integer
+        phoneNumber:
+          type: string
+        whatsappNumber:
+          type: string
+        telegramId:
+          type: string
+        areaOfStay:
+          type: string
+        city:
+          type: string
+        occupation:
+          type: string
+        vehicleNumber:
+          type: string
+        evCarsOwned:
+          type: array
+          items:
+            type: string
+        variantColor:
+          type: string
+        otherCarModel:
+          type: string
+        purchaseMonthYear:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        role:
+          type: string
+          enum: [user, admin]
+        blogEnabled:
+          type: boolean
+        username:
+          type: string
+        avatarUrl:
+          type: string
+        bio:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, name, status, role]
+
+    UpdateOwnerBody:
+      type: object
+      properties:
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+        whatsappNumber:
+          type: string
+        telegramId:
+          type: string
+
+    Registration:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        age:
+          type: integer
+        phoneNumber:
+          type: string
+        whatsappNumber:
+          type: string
+        telegramId:
+          type: string
+        areaOfStay:
+          type: string
+        occupation:
+          type: string
+        vehicleNumber:
+          type: string
+        evCarsOwned:
+          type: array
+          items:
+            type: string
+        variantColor:
+          type: string
+        otherCarModel:
+          type: string
+        purchaseMonthYear:
+          type: string
+        proofOfOwnershipUrl:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        rejectionReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, name, status]
+
+    ApproveRegistrationBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        blogEnabled:
+          type: boolean
+      required: [username, password]
+
+    RejectRegistrationBody:
+      type: object
+      properties:
+        reason:
+          type: string
+      required: [reason]
+
+    # ─── DASHBOARD ────────────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      properties:
+        totalOwners:
+          type: integer
+        pendingRegistrations:
+          type: integer
+        totalBlogPosts:
+          type: integer
+        totalGalleryItems:
+          type: integer
+        totalCpos:
+          type: integer
+        totalAccessories:
+          type: integer
+        totalFaqItems:
+          type: integer
+        carModelBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              model:
+                type: string
+              count:
+                type: integer
+            required: [model, count]
+        cityBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              city:
+                type: string
+              count:
+                type: integer
+            required: [city, count]
+        recentRegistrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Registration"
+      required: [totalOwners, pendingRegistrations, totalBlogPosts, totalGalleryItems, totalCpos, totalAccessories, totalFaqItems, carModelBreakdown, cityBreakdown, recentRegistrations]
+
+    # ─── BLOG ─────────────────────────────────────────────────────────────────
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+        coverImageUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        authorId:
+          type: integer
+        authorName:
+          type: string
+        authorAvatarUrl:
+          type: string
+        published:
+          type: boolean
+        viewCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, title, content, authorId, authorName, published, createdAt]
+
+    BlogPostList:
+      type: object
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogPost"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [posts, total, page, limit]
+
+    CreateBlogPostBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+        coverImageUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        published:
+          type: boolean
+      required: [title, content]
+
+    UpdateBlogPostBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        excerpt:
+          type: string
+        coverImageUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        published:
+          type: boolean
+
+    # ─── RANGE ────────────────────────────────────────────────────────────────
+    EvRangeSpec:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        brand:
+          type: string
+        batteryCapacityKwh:
+          type: number
+        wltpRangeKm:
+          type: integer
+        realWorldRangeKm:
+          type: integer
+        chargingSpeedKw:
+          type: number
+        consumptionWh100km:
+          type: number
+        imageUrl:
+          type: string
+      required: [id, code, name, brand, batteryCapacityKwh, wltpRangeKm, realWorldRangeKm]
+
+    RangeCalculateBody:
+      type: object
+      properties:
+        carCode:
+          type: string
+        batteryPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        drivingStyle:
+          type: string
+          enum: [eco, normal, sport]
+        acUsage:
+          type: string
+          enum: [off, low, high]
+        terrainType:
+          type: string
+          enum: [flat, hilly, highway]
+        ambientTempCelsius:
+          type: number
+      required: [carCode, batteryPercentage, drivingStyle, acUsage, terrainType]
+
+    RangeResult:
+      type: object
+      properties:
+        estimatedRangeKm:
+          type: number
+        carName:
+          type: string
+        batteryUsable:
+          type: number
+        factors:
+          type: object
+          properties:
+            drivingStyleFactor:
+              type: number
+            acFactor:
+              type: number
+            terrainFactor:
+              type: number
+            tempFactor:
+              type: number
+          required: [drivingStyleFactor, acFactor, terrainFactor, tempFactor]
+        tips:
+          type: array
+          items:
+            type: string
+      required: [estimatedRangeKm, carName, batteryUsable, factors, tips]
+
+    # ─── CPO ──────────────────────────────────────────────────────────────────
+    Cpo:
+      type: object
+      properties:
+        id:
+          type: integer
+        networkName:
+          type: string
+        contactPerson:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        whatsapp:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        address:
+          type: string
+        chargerTypes:
+          type: array
+          items:
+            type: string
+        maxKw:
+          type: number
+        operatingHours:
+          type: string
+        notes:
+          type: string
+        logoUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, networkName, city, state]
+
+    CreateCpoBody:
+      type: object
+      properties:
+        networkName:
+          type: string
+        contactPerson:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        whatsapp:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        address:
+          type: string
+        chargerTypes:
+          type: array
+          items:
+            type: string
+        maxKw:
+          type: number
+        operatingHours:
+          type: string
+        notes:
+          type: string
+        logoUrl:
+          type: string
+      required: [networkName, city, state]
+
+    UpdateCpoBody:
+      type: object
+      properties:
+        networkName:
+          type: string
+        contactPerson:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        whatsapp:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        address:
+          type: string
+        chargerTypes:
+          type: array
+          items:
+            type: string
+        maxKw:
+          type: number
+        operatingHours:
+          type: string
+        notes:
+          type: string
+        logoUrl:
+          type: string
+
+    # ─── ACCESSORIES ──────────────────────────────────────────────────────────
+    Accessory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        compatibleCars:
+          type: array
+          items:
+            type: string
+        sellerName:
+          type: string
+        sellerContact:
+          type: string
+        sellerUrl:
+          type: string
+        location:
+          type: string
+        priceRange:
+          type: string
+        imageUrl:
+          type: string
+        rating:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, category, sellerName]
+
+    CreateAccessoryBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        compatibleCars:
+          type: array
+          items:
+            type: string
+        sellerName:
+          type: string
+        sellerContact:
+          type: string
+        sellerUrl:
+          type: string
+        location:
+          type: string
+        priceRange:
+          type: string
+        imageUrl:
+          type: string
+        rating:
+          type: number
+      required: [name, category, sellerName]
+
+    UpdateAccessoryBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        compatibleCars:
+          type: array
+          items:
+            type: string
+        sellerName:
+          type: string
+        sellerContact:
+          type: string
+        sellerUrl:
+          type: string
+        location:
+          type: string
+        priceRange:
+          type: string
+        imageUrl:
+          type: string
+        rating:
+          type: number
+
+    # ─── GALLERY ──────────────────────────────────────────────────────────────
+    GalleryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        imageUrl:
+          type: string
+        caption:
+          type: string
+        carModel:
+          type: string
+        location:
+          type: string
+        ownerId:
+          type: integer
+        ownerName:
+          type: string
+        ownerAvatarUrl:
+          type: string
+        likeCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, imageUrl, ownerId, ownerName, createdAt]
+
+    CreateGalleryItemBody:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+        caption:
+          type: string
+        carModel:
+          type: string
+        location:
+          type: string
+      required: [imageUrl]
+
+    # ─── FAQ ──────────────────────────────────────────────────────────────────
+    FaqItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+        category:
+          type: string
+        carModels:
+          type: array
+          items:
+            type: string
+        helpful:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, question, answer, category]
+
+    CreateFaqItemBody:
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+        category:
+          type: string
+        carModels:
+          type: array
+          items:
+            type: string
+      required: [question, answer, category]
+
+    AskFaqBody:
+      type: object
+      properties:
+        question:
+          type: string
+        carModel:
+          type: string
+        conversationId:
+          type: string
+      required: [question]
+
+    FaqAnswer:
+      type: object
+      properties:
+        answer:
+          type: string
+        conversationId:
+          type: string
+        relatedFaqs:
+          type: array
+          items:
+            $ref: "#/components/schemas/FaqItem"
+        sources:
+          type: array
+          items:
+            type: string
+      required: [answer, conversationId]
+
+    FaqConversation:
+      type: object
+      properties:
+        id:
+          type: string
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+                enum: [user, assistant]
+              content:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+            required: [role, content, timestamp]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, messages, createdAt]

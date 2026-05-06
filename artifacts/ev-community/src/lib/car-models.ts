@@ -1,0 +1,41 @@
+export const CAR_MODEL_LABELS: Record<string, string> = {
+  NEV: "Tata Nexon EV Prime",
+  NEM: "Tata Nexon EV Max",
+  N3M: "Tata Nexon EV 3.0 Mid Range",
+  N3L: "Tata Nexon EV 3.0 Long Range",
+  TiM: "Tata Tiago EV Mid Range",
+  TiL: "Tata Tiago EV Long Range",
+  TiG: "Tata Tigor EV",
+  PuM: "Tata Punch EV Mid Range",
+  PuL: "Tata Punch EV Long Range",
+  CeM: "Tata Curvv EV Mid Range",
+  CeL: "Tata Curvv EV Long Range",
+  HeL: "Tata Harrier EV Long Range",
+  HQL: "Tata Harrier EV QWD Long Range",
+  HeM: "Tata Harrier EV Mid Range",
+  ZSM: "MG ZS EV",
+  WeM: "MG Windsor EV",
+  CoM: "MG Comet EV",
+  ByA3: "BYD Atto 3",
+  ByE6: "BYD E6",
+  BySL: "BYD Sealion",
+  KE6: "Kia EV 6",
+  KCC: "Kia Carens Clavis EV",
+  HyK: "Hyundai Kona",
+  HyC: "Hyundai Creta EV",
+  Hi5: "Hyundai Ioniq 5",
+  X400: "Mahindra XUV400",
+  BEV6: "Mahindra BE6",
+  XE9: "Mahindra XEV9E",
+  E20: "Mahindra E2O",
+  "E20+": "Mahindra E2O Plus",
+  REV: "Reva",
+  EQS4: "Mercedes Benz EQS450",
+  EQB3: "Mercedes Benz EQB300",
+  EVit: "Suzuki E Vitara",
+};
+
+export function getCarModelLabel(code: string): string {
+  return CAR_MODEL_LABELS[code] || code;
+}
+
