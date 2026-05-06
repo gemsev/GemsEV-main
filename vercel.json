@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm --filter @workspace/ev-community run build",
+  "outputDirectory": "artifacts/ev-community/dist",
+  "framework": "vite",
+  "functions": {
+    "api/index.ts": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+
