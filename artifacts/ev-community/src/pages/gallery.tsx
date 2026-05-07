@@ -25,7 +25,7 @@ export default function Gallery() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data: items, isLoading } = useListGalleryItems(
+  const { data: items, isLoading, error } = useListGalleryItems(
     {},
     { query: { queryKey: getListGalleryItemsQueryKey({}) } }
   );
@@ -126,6 +126,13 @@ export default function Gallery() {
         <div className="text-center py-20 text-muted-foreground">
           <p className="text-lg font-medium">No photos yet</p>
           <p className="text-sm mt-1">Be the first to share a photo</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-12 text-muted-foreground border rounded-xl bg-card mb-6">
+          <p className="text-lg font-medium">Gallery is currently unavailable</p>
+          <p className="text-sm mt-1">This deployment needs a working API endpoint to load gallery data.</p>
         </div>
       )}
 

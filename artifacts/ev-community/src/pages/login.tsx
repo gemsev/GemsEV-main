@@ -46,9 +46,16 @@ export default function Login() {
         }
       },
       onError: (error) => {
+        const e = error as any;
+        const apiUnavailable =
+          e?.status === 404 ||
+          e?.status === 0 ||
+          String(e?.message || "").toLowerCase().includes("failed to fetch");
         toast({
           title: "Login failed",
-          description: (error as any).data?.error || "Invalid credentials",
+          description: apiUnavailable
+            ? "Login service is unavailable on this deployment. Please connect a backend API."
+            : e?.data?.error || "Invalid credentials",
           variant: "destructive",
         });
       },
