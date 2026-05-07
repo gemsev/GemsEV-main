@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Email is required"),
+  username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -74,7 +74,7 @@ export default function Login() {
         </div>
         <h1 className="text-3xl font-bold text-center mb-2 text-primary">Member Login</h1>
         <p className="text-center text-sm text-muted-foreground mb-6">
-          Use your email address and the password set by admin
+          Use your username and the password set by admin
         </p>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -83,9 +83,9 @@ export default function Login() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="yourname@example.com" {...field} />
+                    <Input placeholder="your-username" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
