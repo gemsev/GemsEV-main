@@ -13,25 +13,11 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? "/";
 
-function stripUseClientDirective() {
-  return {
-    name: "strip-use-client-directive",
-    apply: "build" as const,
-    transform(code: string, id: string) {
-      if (!/\.(tsx|ts|jsx|js)$/.test(id)) return null;
-      if (!code.startsWith('"use client"') && !code.startsWith("'use client'")) return null;
-      const next = code.replace(/^["']use client["'];?\s*/, "");
-      return { code: next, map: null };
-    },
-  };
-}
-
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss(),
-    stripUseClientDirective(),
     ...(process.env.NODE_ENV !== "production" ? [runtimeErrorOverlay()] : []),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
