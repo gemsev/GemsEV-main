@@ -24,18 +24,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid lg:grid-cols-2 gap-6 md:gap-8 items-center mb-12 md:mb-16">
-        <img
-          src="/community-hero.jpg"
-          alt="GEMS EV community"
-          className="w-full h-[260px] md:h-[360px] object-cover rounded-lg border"
-        />
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">Built by EV Owners, for EV Owners</h2>
-          <p className="text-muted-foreground mb-4 leading-relaxed">
-            From first-time buyers to seasoned owners, GEMS helps members with real-world tips on charging, range confidence,
-            long drives, service experiences, and accessories.
-          </p>
+      <section className="max-w-4xl mx-auto mb-12 md:mb-16">
+        <h2 className="text-2xl md:text-3xl font-bold mb-3 text-center">Built by EV Owners, for EV Owners</h2>
+        <p className="text-muted-foreground mb-4 leading-relaxed text-center">
+          From first-time buyers to seasoned owners, GEMS helps members with real-world tips on charging, range confidence,
+          long drives, service experiences, and accessories.
+        </p>
+        <div className="flex justify-center">
           <Button variant="outline" asChild>
             <Link href="/about">Learn More</Link>
           </Button>
